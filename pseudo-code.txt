@@ -1,0 +1,82 @@
+-> Setup enviroment
+
+[server.js]
+
+- Get express
+- Create app/server
+- Define PORT: 8080
+- Get mongoose
+- Define connection string
+- Try to connect with Mongoose and get my connection
+    - Make mongoose tell me when there is an error
+    - Make mongoose tell me when is connected
+- Define my mongoose models
+- Define API endpoints on my express app
+- Start listening for request on my express app
+
+
+[express endpoint /students get]
+- Get Student model
+- Find all documents in the model
+    - If there is an error
+        - Status = 400
+        - Display error message
+    - else
+        - Display documents found
+
+[express endpoint /students post]
+- Get the body from the request
+- Create a new instance of the model Student
+- Save new instance
+    - If succesful(then)
+        - Display message to client
+    - If error(catch)
+        - status = 400
+        - Display error message
+    
+[express endpoint /students/:id get]
+- Get parameter id from request
+- Get Student model
+- Find by id in the model
+    - If there is an error
+        - status = 400
+        - Display error message
+    - else 
+        - Display document found
+
+[express endpoint /students/:id put]
+- Get parameter id from request
+- Get Student model
+- Find by id in the model
+    - If there is an error
+        - status = 400
+        - Display error message
+    - else 
+        - Get the body from request
+        - Use the document we found and asign the new data
+            **Student.firstName = body.firstName
+            **Student.lasttName = body.lastName
+            **Student.email = body.email
+        - Save changes in the document
+            - If succesful(then)
+                - Display message
+            - If error(catch)
+                - status = 400
+                - Display error message
+
+[express endpoint /students/:id delete] 
+- Get parameter id from request
+- Get Student model
+- Find by id in the model
+    - If there is an error
+        - status = 400
+        - Display error message
+    - else 
+        - Delete the document we found
+            - If succesful(then)
+                - Display message
+            - If error(catch)
+                - status = 400
+                - Display error message
+
+
