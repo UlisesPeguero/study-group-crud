@@ -2,9 +2,13 @@ const express = require('express'); // get express from modules
 const app = express(); // create application from express
 const mongoose = require('mongoose'); // get mongoose from modules
 const PORT = 8080; // port for express to listen on
-const DB_CONNECTION = 'mongodb://localhost:27017/students'; // <dbname>:students
+// Get your own mongodb "connection to application" string from cloud.mongodb.com
+const DB_CONNECTION = 'mongodb://localhost:27017/students'; 
+    // <password>: your password
+    // <dbname>: students
 // add model Student
 let Student = require('./models/student');
+const ObjectId = mongoose.Types.ObjectId;
 
 // connect to the database
 mongoose.connect(DB_CONNECTION, {
@@ -19,7 +23,7 @@ connection.on('error', error => console.log(`Mongo connection error: ${error}`))
 // log on the console once the connection is open
 connection.once('open', () => console.log('MongoDB database connection established succesfully.'));
 
-// boilerplate express server
+// template express server
 app.use(express.urlencoded({extended: true})); 
 app.use(express.json()); // specify that we are using json objects to request and response
 
@@ -32,6 +36,9 @@ app.use('/' /* route */ ,
     /students/      get post
     /students/:id   get put delete   
 */
+// GET localhost:PORT/students
+// model.find -> mongoose model method
+//  model.find(callback(error, result));
 app.get('/students', (request, response) => {
     Student.find((error /* error message if there was an error*/
                 , result /* result from search */) => {
@@ -46,9 +53,12 @@ app.get('/students', (request, response) => {
     });
 });
 
+// POST localhost:PORT/students
+// model.save -> mongoose model method
+// save is a promise and uses then-catch
 app.post('/students', (request, response) =>  {
     // new instance of model Student
-    let student = new Student(request.body);    
+    let student = new Student(request.body);  // body is teh data we sent from the request
     // insert document into the collection
     student.save()// attempts to save into the database
         .then(() => { // successful saving
@@ -65,7 +75,9 @@ app.post('/students', (request, response) =>  {
         });
 });
 
-// /students/:id
+// GET /students/:id
+// model.findById -> mongoose model method
+// model.findById(search, callback(error, result) )
 app.get('/students/:id', (request, response) => {
     const id = request.params.id; // get parameter id from request
     Student.findById( // search by id in model Student
@@ -76,13 +88,72 @@ app.get('/students/:id', (request, response) => {
                 response.json({ // Display error message
                     message: 'Data was not found.',
                     error: error.message
-                })
+                });
             } else {
                 response.json(result); // Display document found
             }
         }
     )
 });
+
+// PUT /students/:id
+// model.findById
+// model.save
+app.put('/students/:id', (request, response) => {
+    const id = request.params.id; // get id form request params
+    // get the document to update
+    Student.findById( // Student find by id
+        id,
+        (error, result) => { // result: Student
+            if(error) { // was there an error?
+                response.status(400); // status = 400
+                response.json({ // send error to client
+                    message: 'Data was not found.',
+                    error: error.message
+                });
+            } else { // there was not an error
+                const data = request.body;// data = request.body
+                // result = data
+                result.firstName = data.firstName;
+                result.lastName = data.lastName;
+                result.email = data.email;
+                //
+                result.save() // result.save
+                    .then(() => { 
+                        response.json({
+                            success: true
+                        });
+                    })
+                    .catch(error => {
+                        response.status(400);
+                        response.json({
+                            success: false,
+                            error: error.message
+                        });
+                    });
+            }
+        }
+    );
+});
+
+// DELETE /students/:id
+// model.deleteOne -> mongoose model method
+// model.deleteOne(search, callback(error))
+app.delete('/Students/:id', (request, response) => {
+    const id = request.params.id; // id = request.params.id
+   /* Student.deleteOne({
+        _id: 
+    })*/
+    Student.find({
+        _id: ObjectId(id)
+    }, (error, result) => {
+        response.json({
+            result: result,
+            error: error
+        })
+    });
+});
+
 
 // start server
 // last method to execute

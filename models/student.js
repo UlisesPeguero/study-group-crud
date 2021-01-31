@@ -19,7 +19,7 @@ let Student = new mongoose.Schema({
         type: String,
         required: true
     },
-    email: String    
+    email: String        
 });
 
 // allows to require this file
