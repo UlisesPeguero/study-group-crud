@@ -8,6 +8,7 @@ const DB_CONNECTION = 'mongodb://localhost:27017/students';
     // <dbname>: students
 // add model Student
 let Student = require('./models/student');
+// method that converts strings into mongoose model ids
 const ObjectId = mongoose.Types.ObjectId;
 
 // connect to the database
@@ -24,7 +25,7 @@ connection.on('error', error => console.log(`Mongo connection error: ${error}`))
 connection.once('open', () => console.log('MongoDB database connection established succesfully.'));
 
 // template express server
-app.use(express.urlencoded({extended: true})); 
+app.use(express.urlencoded({extended: true}));
 app.use(express.json()); // specify that we are using json objects to request and response
 
 // define public folder
@@ -138,22 +139,32 @@ app.put('/students/:id', (request, response) => {
 
 // DELETE /students/:id
 // model.deleteOne -> mongoose model method
-// model.deleteOne(search, callback(error))
-app.delete('/Students/:id', (request, response) => {
+// model.deleteOne(search, callback(error, result))
+app.delete('/students/:id', (request, response) => {
     const id = request.params.id; // id = request.params.id
-   /* Student.deleteOne({
-        _id: 
-    })*/
-    Student.find({
+    Student.deleteOne({
         _id: ObjectId(id)
     }, (error, result) => {
-        response.json({
-            result: result,
-            error: error
-        })
+        if(error) { // if there was error
+            response.status(400);            
+            response.json({
+                success: false,
+                error: error.message
+            });
+        } else { // if everything worked out and found the student
+            if(result.deletedCount > 0) { // if there was something deleted
+                response.json({
+                    success: true
+                });
+            } else { // if 0 meaning nothing was found
+                response.status(400);
+                response.json({
+                    message: 'Data was not found'
+                });
+            }
+        } 
     });
 });
-
 
 // start server
 // last method to execute
